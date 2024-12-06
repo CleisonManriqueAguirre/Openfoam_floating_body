@@ -1,0 +1,23 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+./Allrun.pre
+
+# Change to the 'background' directory and prepare the case for parallel execution
+(
+    cd background || exit
+
+    # Decompose the domain for parallel processing
+    runApplication decomposePar
+
+    # Set rwx permissions for the user on the processor directories
+    chmod -R u+rwx processor*
+
+    # Run the solver in parallel
+    mpirun -np 4 overInterDyMFoam -parallel > log.OverWaves &
+    tail -f log.OverWaves &
+)
+
+#------------------------------------------------------------------------------
